@@ -14,6 +14,60 @@
   --red:#f87171;--rbg:rgba(248,113,113,0.1);--rb:rgba(248,113,113,0.3);
   --amber:#fbbf24;--r:10px;--rl:14px;
 }
+/* THEME CLAIR */
+[data-theme="light"]{
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f3f4f6;--bg4:#e5e7eb;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+  --accent:#2563eb;--accent2:#1d4ed8;
+  --green:#16a34a;--gbg:rgba(22,163,74,0.08);--gb:rgba(22,163,74,0.25);
+  --red:#dc2626;--rbg:rgba(220,38,38,0.08);--rb:rgba(220,38,38,0.25);
+  --amber:#d97706;
+}
+/* THEME BLEU */
+[data-theme="blue"]{
+  --bg:#0d1b2e;--bg2:#102040;--bg3:#163058;--bg4:#1e3a6e;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#e2eeff;--text2:#7aa2cc;--text3:#4a6a8a;
+  --accent:#60a5fa;--accent2:#3b82f6;
+  --green:#34d399;--gbg:rgba(52,211,153,0.1);--gb:rgba(52,211,153,0.3);
+  --red:#f87171;--rbg:rgba(248,113,113,0.1);--rb:rgba(248,113,113,0.3);
+  --amber:#fbbf24;
+}
+/* THEME VERT */
+[data-theme="green"]{
+  --bg:#0a1a0f;--bg2:#0f2418;--bg3:#163021;--bg4:#1e3d2b;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#dcfce7;--text2:#6db88a;--text3:#3d6b50;
+  --accent:#4ade80;--accent2:#22c55e;
+  --green:#4ade80;--gbg:rgba(74,222,128,0.1);--gb:rgba(74,222,128,0.3);
+  --red:#f87171;--rbg:rgba(248,113,113,0.1);--rb:rgba(248,113,113,0.3);
+  --amber:#fbbf24;
+}
+/* THEME VIOLET */
+[data-theme="purple"]{
+  --bg:#0f0a1e;--bg2:#160f2e;--bg3:#1e1640;--bg4:#271e52;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --text:#ede9fe;--text2:#8b78cc;--text3:#5a4a8a;
+  --accent:#a78bfa;--accent2:#7c3aed;
+  --green:#34d399;--gbg:rgba(52,211,153,0.1);--gb:rgba(52,211,153,0.3);
+  --red:#f87171;--rbg:rgba(248,113,113,0.1);--rb:rgba(248,113,113,0.3);
+  --amber:#fbbf24;
+}
+
+/* theme card styles */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.theme-card{border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;user-select:none}
+.theme-card:hover{transform:translateY(-2px)}
+.theme-card.selected{border-color:var(--accent)}
+.theme-card .tc-preview{width:100%;height:44px;border-radius:7px;margin-bottom:8px;display:flex;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.theme-card .tc-preview .s{flex:0 0 35%;border-right:1px solid rgba(255,255,255,0.1)}
+.theme-card .tc-preview .m{flex:1}
+.theme-card .tc-name{font-size:12px;font-weight:600;color:var(--text)}
+.theme-card .tc-check{font-size:16px;margin-top:4px}
+.settings-section{margin-bottom:28px}
+.settings-section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:14px;overflow:hidden}
 
 /* LAYOUT */
@@ -160,6 +214,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
       <div class="nav-item active" id="nav-home" onclick="goHome()">🏠 <span>Accueil</span></div>
       <div class="nav-lbl" style="margin-top:8px">Projets</div>
       <div id="nav-projects"></div>
+      <div class="nav-lbl" style="margin-top:8px">Application</div>
+      <div class="nav-item" id="nav-global-settings" onclick="showGlobalSettings()">⚙️ <span>Paramètres</span></div>
     </div>
     <div class="sb-footer">
       <button class="btn-new" onclick="showNewProject()">+ Nouveau projet</button>
@@ -217,6 +273,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
         <div id="tc-settings" class="tc"></div>
       </div>
 
+      <!-- GLOBAL SETTINGS -->
+      <div id="s-global-settings" class="screen">
+        <div style="max-width:560px">
+          <div class="settings-section">
+            <div class="settings-section-title">🎨 Thème de l'application</div>
+            <div class="theme-grid" id="theme-grid"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -254,7 +320,55 @@ function updateDate() {
     new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 
+// ══ THEMES ═══════════════════════════════════════════════════════════════════
+const THEMES = [
+  { id:'dark',   name:'Sombre',  sidebar:'#161920', main:'#0f1117', accent:'#3d7eff' },
+  { id:'light',  name:'Clair',   sidebar:'#ffffff', main:'#f0f2f5', accent:'#2563eb' },
+  { id:'blue',   name:'Bleu',    sidebar:'#102040', main:'#0d1b2e', accent:'#60a5fa' },
+  { id:'green',  name:'Vert',    sidebar:'#0f2418', main:'#0a1a0f', accent:'#4ade80' },
+  { id:'purple', name:'Violet',  sidebar:'#160f2e', main:'#0f0a1e', accent:'#a78bfa' },
+];
+
+function applyTheme(themeId) {
+  document.documentElement.setAttribute('data-theme', themeId === 'dark' ? '' : themeId);
+  localStorage.setItem('presence-theme', themeId);
+}
+
+function loadSavedTheme() {
+  const saved = localStorage.getItem('presence-theme') || 'dark';
+  applyTheme(saved);
+}
+
+function renderThemeGrid() {
+  const current = localStorage.getItem('presence-theme') || 'dark';
+  document.getElementById('theme-grid').innerHTML = THEMES.map(t => `
+    <div class="theme-card ${current===t.id?'selected':''}" onclick="selectTheme('${t.id}')" id="tcard-${t.id}">
+      <div class="tc-preview">
+        <div class="s" style="background:${t.sidebar}"></div>
+        <div class="m" style="background:${t.main}"></div>
+      </div>
+      <div class="tc-name">${t.name}</div>
+      <div class="tc-check">${current===t.id?'✓':''}</div>
+    </div>`).join('');
+}
+
+function selectTheme(themeId) {
+  applyTheme(themeId);
+  renderThemeGrid();
+  toast('Thème "' + THEMES.find(t=>t.id===themeId)?.name + '" appliqué');
+}
+
+function showGlobalSettings() {
+  currentProjectId = null;
+  document.getElementById('topbar-title').textContent = 'Paramètres';
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  document.getElementById('nav-global-settings').classList.add('active');
+  showScreen('s-global-settings');
+  renderThemeGrid();
+}
+
 // ══ INIT ══════════════════════════════════════════════════════════════════════
+loadSavedTheme();
 updateDate();
 setInterval(updateDate, 60000);
 loadHome();
