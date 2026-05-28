@@ -1,286 +1,168 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
 <title>Suivi Présences</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#161920;--bg3:#1e2330;--bg4:#252b3b;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8eaf0;--text2:#8892a4;--text3:#5a6478;
+  --accent:#3d7eff;--accent2:#2563eb;
+  --green:#22c55e;--gbg:rgba(34,197,94,0.1);--gb:rgba(34,197,94,0.3);
+  --red:#f87171;--rbg:rgba(248,113,113,0.1);--rb:rgba(248,113,113,0.3);
+  --amber:#fbbf24;--r:10px;--rl:14px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:14px;overflow:hidden}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* LAYOUT */
+.app{display:flex;height:100vh}
+.sidebar{width:230px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-header{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.logo{font-size:15px;font-weight:700}.logo span{color:var(--accent)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.sb-nav{flex:1;overflow-y:auto;padding:8px}
+.nav-lbl{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;border:1px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.nav-item .badge{margin-left:auto;font-size:10px;background:var(--bg3);color:var(--text3);padding:1px 6px;border-radius:10px}
+.sb-footer{padding:12px;border-top:1px solid var(--border)}
+.btn-new{width:100%;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-new:hover{background:var(--accent2)}
 
-  :root {
-    --bg: #0f1117;
-    --bg2: #161920;
-    --bg3: #1e2330;
-    --bg4: #252b3b;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #e8eaf0;
-    --text2: #8892a4;
-    --text3: #5a6478;
-    --accent: #3d7eff;
-    --accent2: #2563eb;
-    --green: #22c55e;
-    --green-bg: rgba(34,197,94,0.1);
-    --green-border: rgba(34,197,94,0.25);
-    --red: #f87171;
-    --red-bg: rgba(248,113,113,0.1);
-    --red-border: rgba(248,113,113,0.25);
-    --amber: #fbbf24;
-    --radius: 10px;
-    --radius-lg: 14px;
-    --sidebar: 240px;
-    --titlebar: 38px;
-  }
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:50px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:600}
+.topbar-date{margin-left:auto;font-size:12px;color:var(--text3)}
+.content{flex:1;overflow-y:auto;padding:22px 24px}
 
-  html, body { height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+/* SCREENS */
+.screen{display:none}.screen.active{display:block}
 
-  /* ── LAYOUT ── */
-  .app { display: flex; height: 100vh; }
+/* HOME */
+.empty-home{text-align:center;padding:70px 20px}
+.empty-icon{font-size:52px;margin-bottom:16px}
+.empty-home h2{font-size:20px;font-weight:600;margin-bottom:8px}
+.empty-home p{color:var(--text2);max-width:340px;margin:0 auto 22px;line-height:1.6}
+.projs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.proj-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all .18s}
+.proj-card:hover{border-color:var(--border2);background:var(--bg3);transform:translateY(-1px)}
+.proj-name{font-size:15px;font-weight:600;margin-bottom:4px}
+.proj-desc{font-size:12px;color:var(--text2);margin-bottom:12px;min-height:16px;line-height:1.5}
+.proj-footer{display:flex;gap:7px;flex-wrap:wrap}
+.pill{font-size:11px;padding:2px 9px;border-radius:20px}
+.pill-blue{background:rgba(61,126,255,.12);color:#6fa3ff;border:1px solid rgba(61,126,255,.2)}
+.pill-green{background:var(--gbg);color:var(--green);border:1px solid var(--gb)}
 
-  .sidebar {
-    width: var(--sidebar); flex-shrink: 0;
-    background: var(--bg2);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    padding-top: var(--titlebar);
-    overflow: hidden;
-  }
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--bg2);padding:4px;border-radius:10px;width:fit-content;margin-bottom:20px}
+.tab{padding:7px 15px;border-radius:7px;font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:inherit;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2)}
+.tc{display:none}.tc.active{display:block}
 
-  .sidebar-header {
-    padding: 20px 16px 12px;
-    -webkit-app-region: drag;
-  }
-  .sidebar-logo { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
-  .sidebar-logo span { color: var(--accent); }
-  .sidebar-subtitle { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px}
+.sc-n{font-size:26px;font-weight:700;margin-bottom:1px}
+.sc-l{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.sc.green{border-color:var(--gb)}.sc.green .sc-n{color:var(--green)}
+.sc.red{border-color:var(--rb)}.sc.red .sc-n{color:var(--red)}
+.sc.blue .sc-n{color:#6fa3ff}.sc.amber .sc-n{color:var(--amber)}
 
-  .sidebar-nav { padding: 8px; flex: 1; overflow-y: auto; }
-  .nav-section-label { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; padding: 8px 8px 4px; }
+/* PARTICIPANTS */
+.sec-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:10px}
+.part-list{display:flex;flex-direction:column;gap:7px}
+.part-row{display:flex;align-items:center;gap:13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;transition:border-color .15s}
+.part-row.present{border-left:3px solid var(--green)}
+.part-row.absent{border-left:3px solid var(--red)}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.pname{flex:1;font-size:14px;font-weight:500}
+.pstatus{font-size:11px;color:var(--text3)}
+.pstatus.present{color:var(--green)}.pstatus.absent{color:var(--red)}
+.btn-grp{display:flex;gap:6px}
+.bp,.ba{padding:6px 13px;border-radius:7px;border:1px solid;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.bp{background:transparent;border-color:var(--gb);color:var(--green)}
+.bp:hover,.bp.active{background:var(--gbg);border-color:var(--green)}
+.ba{background:transparent;border-color:var(--rb);color:var(--red)}
+.ba:hover,.ba.active{background:var(--rbg);border-color:var(--red)}
 
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 10px; border-radius: 8px; cursor: pointer;
-    color: var(--text2); font-size: 13px; transition: all 0.15s;
-    border: 1px solid transparent; user-select: none;
-  }
-  .nav-item:hover { background: var(--bg3); color: var(--text); }
-  .nav-item.active { background: var(--bg4); color: var(--text); border-color: var(--border2); }
-  .nav-item .nav-icon { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
-  .nav-item.active .nav-icon { opacity: 1; }
-  .nav-item .nav-badge { margin-left: auto; font-size: 10px; background: var(--bg4); color: var(--text3); padding: 1px 6px; border-radius: 10px; font-family: 'DM Mono', monospace; }
+/* FORM */
+.form-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:22px;max-width:540px}
+.form-title{font-size:17px;font-weight:700;margin-bottom:18px}
+.fg{margin-bottom:15px}
+.fl{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.fi{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--accent)}
+.fi::placeholder{color:var(--text3)}
+.parts-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.pi-row{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--border)}
+.pi-row:last-child{border-bottom:none}
+.pi-name{flex:1;font-size:13px}
+.btn-rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;transition:color .15s}
+.btn-rm:hover{color:var(--red)}
+.add-row{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border)}
+.add-row .fi{flex:1}
+.btn-add{padding:9px 15px;background:var(--accent);border:none;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;flex-shrink:0;font-family:inherit;transition:background .15s}
+.btn-add:hover{background:var(--accent2)}
+.btn-submit{width:100%;padding:11px;background:var(--accent);border:none;color:#fff;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit;transition:background .15s}
+.btn-submit:hover{background:var(--accent2)}
+.btn-submit:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+.btn-sec{padding:8px 15px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s}
+.btn-sec:hover{background:var(--bg3);color:var(--text)}
+.btn-danger{padding:8px 15px;background:transparent;border:1px solid var(--rb);color:var(--red);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s}
+.btn-danger:hover{background:var(--rbg)}
 
-  .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); }
-  .new-project-btn {
-    width: 100%; padding: 9px 12px; border-radius: 8px;
-    background: var(--accent); border: none; color: white;
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    display: flex; align-items: center; gap: 8px; justify-content: center;
-    transition: background 0.15s; font-family: 'DM Sans', sans-serif;
-  }
-  .new-project-btn:hover { background: var(--accent2); }
+/* HISTORY */
+.df{display:flex;gap:9px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.df .fi{width:auto}
+.hblock{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.hhead{padding:9px 15px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px}
+.hrow{display:flex;align-items:center;gap:11px;padding:9px 15px;border-bottom:1px solid var(--border)}
+.hrow:last-child{border-bottom:none}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.present{background:var(--green)}.dot.absent{background:var(--red)}.dot.none{background:var(--text3)}
+.hname{flex:1;font-size:13px}
+.hst{font-size:12px;font-weight:600}
+.hst.present{color:var(--green)}.hst.absent{color:var(--red)}.hst.none{color:var(--text3)}
 
-  /* ── MAIN ── */
-  .main {
-    flex: 1; overflow: hidden; display: flex; flex-direction: column;
-    padding-top: var(--titlebar);
-  }
+/* STATS TABLE */
+.stbl{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.st-row{display:flex;align-items:center;gap:13px;padding:10px 15px;border-bottom:1px solid var(--border)}
+.st-row:last-child{border-bottom:none}
+.st-name{width:150px;flex-shrink:0;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bw{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.bf{height:100%;background:var(--green);border-radius:3px;transition:width .4s}
+.st-pct{width:40px;text-align:right;font-size:12px;color:var(--text2)}
+.st-nums{display:flex;gap:8px;font-size:11px}
+.stp{color:var(--green);font-weight:600}.sta{color:var(--red);font-weight:600}
 
-  .topbar {
-    height: 52px; flex-shrink: 0;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; gap: 12px;
-    background: var(--bg);
-    -webkit-app-region: drag;
-  }
-  .topbar-title { font-size: 15px; font-weight: 500; }
-  .topbar-date { font-size: 12px; color: var(--text3); margin-left: auto; font-family: 'DM Mono', monospace; -webkit-app-region: no-drag; }
-
-  .content { flex: 1; overflow-y: auto; padding: 24px; }
-
-  /* ── SCREENS ── */
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  /* ── HOME ── */
-  .home-empty { text-align: center; padding: 80px 20px; }
-  .home-empty .icon { font-size: 48px; margin-bottom: 16px; }
-  .home-empty h2 { font-size: 20px; font-weight: 500; margin-bottom: 8px; }
-  .home-empty p { color: var(--text2); font-size: 14px; max-width: 360px; margin: 0 auto 24px; line-height: 1.6; }
-
-  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
-  .project-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 18px;
-    cursor: pointer; transition: all 0.18s;
-  }
-  .project-card:hover { border-color: var(--border2); background: var(--bg3); transform: translateY(-1px); }
-  .project-card-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
-  .project-card-desc { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; min-height: 18px; }
-  .project-card-footer { display: flex; gap: 8px; flex-wrap: wrap; }
-  .pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-family: 'DM Mono', monospace; }
-  .pill-blue { background: rgba(61,126,255,0.12); color: #6fa3ff; border: 1px solid rgba(61,126,255,0.2); }
-  .pill-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
-
-  /* ── TABS ── */
-  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 22px; }
-  .tab { padding: 7px 16px; border-radius: 7px; font-size: 13px; cursor: pointer; color: var(--text2); border: none; background: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-  .tab:hover { color: var(--text); }
-  .tab.active { background: var(--bg4); color: var(--text); border: 1px solid var(--border2); }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* ── STATS ROW ── */
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
-  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
-  .stat-n { font-size: 26px; font-weight: 600; font-family: 'DM Mono', monospace; margin-bottom: 2px; }
-  .stat-l { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
-  .stat-card.green { border-color: var(--green-border); }
-  .stat-card.green .stat-n { color: var(--green); }
-  .stat-card.red { border-color: var(--red-border); }
-  .stat-card.red .stat-n { color: var(--red); }
-  .stat-card.blue .stat-n { color: #6fa3ff; }
-  .stat-card.amber .stat-n { color: var(--amber); }
-
-  /* ── PARTICIPANT LIST ── */
-  .part-list { display: flex; flex-direction: column; gap: 8px; }
-  .part-row {
-    display: flex; align-items: center; gap: 14px;
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 12px 16px;
-    transition: border-color 0.15s;
-  }
-  .part-row.present { border-left: 3px solid var(--green); }
-  .part-row.absent { border-left: 3px solid var(--red); }
-
-  .avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; flex-shrink: 0;
-    font-family: 'DM Mono', monospace;
-  }
-  .part-name { flex: 1; font-size: 14px; font-weight: 500; }
-  .part-status { font-size: 11px; color: var(--text3); }
-  .part-status.present { color: var(--green); }
-  .part-status.absent { color: var(--red); }
-
-  .btn-group { display: flex; gap: 6px; }
-  .btn-p, .btn-a {
-    padding: 6px 14px; border-radius: 7px; border: 1px solid;
-    font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .btn-p { background: transparent; border-color: var(--green-border); color: var(--green); }
-  .btn-p:hover, .btn-p.active { background: var(--green-bg); border-color: var(--green); }
-  .btn-a { background: transparent; border-color: var(--red-border); color: var(--red); }
-  .btn-a:hover, .btn-a.active { background: var(--red-bg); border-color: var(--red); }
-
-  /* ── FORM ── */
-  .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; max-width: 560px; }
-  .form-title { font-size: 17px; font-weight: 500; margin-bottom: 20px; }
-  .form-group { margin-bottom: 16px; }
-  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
-  .form-input {
-    width: 100%; padding: 9px 12px;
-    background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 8px; color: var(--text); font-size: 14px;
-    font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s;
-  }
-  .form-input:focus { border-color: var(--accent); }
-  .form-input::placeholder { color: var(--text3); }
-
-  .participants-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .part-item-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
-  .part-item-row:last-child { border-bottom: none; }
-  .part-item-name { flex: 1; font-size: 13px; }
-  .btn-remove { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; transition: color 0.15s; }
-  .btn-remove:hover { color: var(--red); }
-  .add-row { display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border); }
-  .add-row .form-input { flex: 1; }
-  .btn-add { padding: 9px 16px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; flex-shrink: 0; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
-  .btn-add:hover { background: var(--accent2); }
-  .btn-submit { width: 100%; padding: 11px; background: var(--accent); border: none; color: white; border-radius: 9px; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
-  .btn-submit:hover { background: var(--accent2); }
-  .btn-danger { padding: 8px 16px; background: transparent; border: 1px solid var(--red-border); color: var(--red); border-radius: 8px; cursor: pointer; font-size: 12px; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-  .btn-danger:hover { background: var(--red-bg); }
-  .btn-secondary { padding: 8px 16px; background: transparent; border: 1px solid var(--border2); color: var(--text2); border-radius: 8px; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-  .btn-secondary:hover { background: var(--bg3); color: var(--text); }
-
-  /* ── HISTORY ── */
-  .date-filter { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
-  .date-filter .form-input { width: auto; }
-  .history-block { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
-  .history-head { padding: 10px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-  .history-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
-  .history-row:last-child { border-bottom: none; }
-  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .dot.present { background: var(--green); }
-  .dot.absent { background: var(--red); }
-  .dot.none { background: var(--text3); }
-  .h-name { flex: 1; font-size: 13px; }
-  .h-status { font-size: 12px; font-weight: 500; }
-  .h-status.present { color: var(--green); }
-  .h-status.absent { color: var(--red); }
-  .h-status.none { color: var(--text3); }
-
-  /* ── STATS ── */
-  .stats-table { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .st-row { display: flex; align-items: center; gap: 14px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
-  .st-row:last-child { border-bottom: none; }
-  .st-name { width: 160px; flex-shrink: 0; font-size: 13px; font-weight: 500; }
-  .bar-wrap { flex: 1; height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
-  .bar-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s ease; }
-  .st-pct { width: 44px; text-align: right; font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
-  .st-nums { display: flex; gap: 10px; font-size: 11px; font-family: 'DM Mono', monospace; }
-  .st-p { color: var(--green); }
-  .st-a { color: var(--red); }
-
-  /* ── MISC ── */
-  .empty { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
-  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); font-weight: 500; margin-bottom: 12px; }
-  .row-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; }
-  .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--bg4); border: 1px solid var(--border2);
-    color: var(--text); padding: 10px 16px; border-radius: 10px;
-    font-size: 13px; opacity: 0; pointer-events: none;
-    transition: opacity 0.25s; z-index: 999;
-  }
-  .toast.show { opacity: 1; }
-  .scrollbar::-webkit-scrollbar { width: 4px; }
-  .scrollbar::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+/* MISC */
+.empty{text-align:center;padding:36px;color:var(--text3);font-size:13px}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:999}
+.toast.show{opacity:1}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
 </style>
 </head>
 <body>
-
 <div class="app">
+
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">Suivi <span>Présences</span></div>
-      <div class="sidebar-subtitle">v1.0.0</div>
+    <div class="sb-header">
+      <div class="logo">Suivi <span>Présences</span></div>
+      <div class="logo-sub">Base de données locale</div>
     </div>
-    <div class="sidebar-nav scrollbar">
-      <div class="nav-section-label">Navigation</div>
-      <div class="nav-item active" onclick="goHome()" id="nav-home">
-        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M2 6.5L8 2l6 4.5V14H10v-3.5H6V14H2V6.5z"/>
-        </svg>
-        Accueil
-      </div>
-      <div class="nav-section-label" style="margin-top:8px">Projets</div>
+    <div class="sb-nav">
+      <div class="nav-lbl">Navigation</div>
+      <div class="nav-item active" id="nav-home" onclick="goHome()">🏠 <span>Accueil</span></div>
+      <div class="nav-lbl" style="margin-top:8px">Projets</div>
       <div id="nav-projects"></div>
     </div>
-    <div class="sidebar-footer">
-      <button class="new-project-btn" onclick="showNewProject()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M7 2v10M2 7h10"/>
-        </svg>
-        Nouveau projet
-      </button>
+    <div class="sb-footer">
+      <button class="btn-new" onclick="showNewProject()">+ Nouveau projet</button>
     </div>
   </div>
 
@@ -290,353 +172,392 @@
       <span class="topbar-title" id="topbar-title">Tableau de bord</span>
       <span class="topbar-date" id="topbar-date"></span>
     </div>
-
-    <div class="content scrollbar">
+    <div class="content">
 
       <!-- HOME -->
-      <div id="screen-home" class="screen active">
-        <div id="home-content"></div>
-      </div>
+      <div id="s-home" class="screen active"><div id="home-content"></div></div>
 
       <!-- NEW PROJECT -->
-      <div id="screen-new-project" class="screen">
+      <div id="s-new" class="screen">
         <div class="form-card">
           <div class="form-title">Nouveau projet</div>
-          <div class="form-group">
-            <label class="form-label">Nom du projet *</label>
-            <input class="form-input" id="inp-proj-name" placeholder="Ex: Chantier Cotonou, Formation comptabilité…" />
+          <div class="fg">
+            <label class="fl">Nom du projet *</label>
+            <input class="fi" id="inp-nom" placeholder="Ex: Chantier route, Formation RH…" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Description</label>
-            <input class="form-input" id="inp-proj-desc" placeholder="Brève description optionnelle…" />
+          <div class="fg">
+            <label class="fl">Description (optionnel)</label>
+            <input class="fi" id="inp-desc" placeholder="Brève description…" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Participants *</label>
-            <div class="participants-box" id="new-proj-parts-box">
-              <div id="new-proj-parts-list"></div>
+          <div class="fg">
+            <label class="fl">Participants * <span id="parts-count" style="color:var(--text3);font-weight:400">(0 ajouté)</span></label>
+            <div class="parts-box">
+              <div id="new-parts-list"></div>
               <div class="add-row">
-                <input class="form-input" id="inp-new-part" placeholder="Nom du participant" onkeydown="if(event.key==='Enter')addNewPart()" />
-                <button class="btn-add" onclick="addNewPart()">+ Ajouter</button>
+                <input class="fi" id="inp-part" placeholder="Nom du participant" onkeydown="if(event.key==='Enter'){event.preventDefault();addNewPart()}" />
+                <button class="btn-add" type="button" onclick="addNewPart()">+ Ajouter</button>
               </div>
             </div>
           </div>
-          <button class="btn-submit" onclick="submitNewProject()">Créer le projet</button>
+          <button class="btn-submit" id="btn-create" type="button" onclick="createProject()">✓ Créer le projet</button>
         </div>
       </div>
 
       <!-- PROJECT VIEW -->
-      <div id="screen-project" class="screen">
+      <div id="s-project" class="screen">
         <div class="tabs">
-          <button class="tab active" onclick="switchTab('today', this)">Aujourd'hui</button>
-          <button class="tab" onclick="switchTab('history', this)">Historique</button>
-          <button class="tab" onclick="switchTab('stats', this)">Statistiques</button>
-          <button class="tab" onclick="switchTab('settings', this)">Paramètres</button>
+          <button class="tab active" onclick="swTab('today',this)">Aujourd'hui</button>
+          <button class="tab" onclick="swTab('history',this)">Historique</button>
+          <button class="tab" onclick="swTab('stats',this)">Statistiques</button>
+          <button class="tab" onclick="swTab('settings',this)">Paramètres</button>
         </div>
-
-        <div id="tab-today" class="tab-content active"></div>
-        <div id="tab-history" class="tab-content"></div>
-        <div id="tab-stats" class="tab-content"></div>
-        <div id="tab-settings" class="tab-content"></div>
+        <div id="tc-today"    class="tc active"></div>
+        <div id="tc-history"  class="tc"></div>
+        <div id="tc-stats"    class="tc"></div>
+        <div id="tc-settings" class="tc"></div>
       </div>
 
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
-let state = {
-  projects: [],
-  currentProjectId: null,
-  currentTab: 'today',
-  newParts: []
-};
+// ══ STATE ════════════════════════════════════════════════════════════════════
+let currentProjectId = null;
+let newParts = [];
 
-// ── INIT ───────────────────────────────────────────────────────────────────
-(async function init() {
-  updateDateDisplay();
-  await loadProjects();
-  renderHome();
-  renderNavProjects();
-})();
-
-setInterval(updateDateDisplay, 60000);
-
-function updateDateDisplay() {
-  const now = new Date();
-  const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-  document.getElementById('topbar-date').textContent = now.toLocaleDateString('fr-FR', opts);
-}
-
-function today() { return new Date().toISOString().slice(0, 10); }
-function fmtDate(d) { if(!d) return ''; const [y,m,j] = d.split('-'); return `${j}/${m}/${y}`; }
-
+// ══ HELPERS ══════════════════════════════════════════════════════════════════
+function today() { return new Date().toISOString().slice(0,10); }
+function fmtDate(d) { if(!d) return ''; const [y,m,j]=d.split('-'); return `${j}/${m}/${y}`; }
 function getInitials(n) { return n.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
-const AVATAR_COLORS = [
-  ['#1e3a5f','#6fa3ff'],['#1a3a2a','#22c55e'],['#3a1a1a','#f87171'],
-  ['#2d2a0f','#fbbf24'],['#2a1a3a','#c084fc'],['#1a3535','#2dd4bf']
-];
-function avatarStyle(name) {
-  let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))%AVATAR_COLORS.length;
-  return `background:${AVATAR_COLORS[h][0]};color:${AVATAR_COLORS[h][1]}`;
+
+const AV = [['#1e3a5f','#6fa3ff'],['#1a3a2a','#22c55e'],['#3a1a1a','#f87171'],
+            ['#2d2a0f','#fbbf24'],['#2a1a3a','#c084fc'],['#1a3535','#2dd4bf']];
+function avStyle(n) { let h=0; for(let c of n) h=(h*31+c.charCodeAt(0))%AV.length; return `background:${AV[h][0]};color:${AV[h][1]}`; }
+
+function toast(msg, dur=2800) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), dur);
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setActiveNav(id) {
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  const el=document.getElementById(id); if(el) el.classList.add('active');
+}
+function updateDate() {
+  document.getElementById('topbar-date').textContent =
+    new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 
-function toast(msg, dur=2500) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), dur);
+// ══ INIT ══════════════════════════════════════════════════════════════════════
+updateDate();
+setInterval(updateDate, 60000);
+loadHome();
+
+async function loadHome() {
+  await renderNavProjects();
+  renderHome();
 }
 
-// ── PROJECTS ──────────────────────────────────────────────────────────────
-async function loadProjects() {
-  state.projects = await window.api.getProjets();
+// ══ HOME ══════════════════════════════════════════════════════════════════════
+function goHome() {
+  currentProjectId=null;
+  document.getElementById('topbar-title').textContent='Tableau de bord';
+  setActiveNav('nav-home');
+  showScreen('s-home');
+  renderHome();
 }
 
-function renderNavProjects() {
+async function renderHome() {
+  const projets = await window.api.getProjets();
+  const el = document.getElementById('home-content');
+  if(!projets.length) {
+    el.innerHTML=`<div class="empty-home">
+      <div class="empty-icon">📋</div>
+      <h2>Aucun projet pour l'instant</h2>
+      <p>Créez votre premier projet pour commencer à suivre les présences.</p>
+      <button class="btn-submit" style="width:auto;padding:11px 28px" onclick="showNewProject()">+ Créer un projet</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML=`<div class="sec-lbl" style="margin-bottom:14px">Projets actifs — ${projets.length}</div>
+  <div class="projs-grid">${projets.map(p=>`
+    <div class="proj-card" onclick="openProject(${p.id})">
+      <div class="proj-name">${p.nom}</div>
+      <div class="proj-desc">${p.description||'—'}</div>
+      <div class="proj-footer">
+        <span class="pill pill-blue">${p.participants.length} participant${p.participants.length>1?'s':''}</span>
+        <span class="pill pill-green">${p.nb_jours} jour${p.nb_jours>1?'s':''}</span>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function renderNavProjects() {
+  const projets = await window.api.getProjets();
   const el = document.getElementById('nav-projects');
-  if(!state.projects.length) { el.innerHTML = '<div style="padding:6px 8px;font-size:12px;color:var(--text3)">Aucun projet</div>'; return; }
-  el.innerHTML = state.projects.map(p => `
-    <div class="nav-item ${state.currentProjectId==p.id?'active':''}" onclick="openProject(${p.id})" id="navp-${p.id}">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="2" y="3" width="12" height="10" rx="2"/>
-        <path d="M5 7h6M5 10h4"/>
-      </svg>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nom}</span>
-      <span class="nav-badge">${p.participants.length}</span>
+  if(!projets.length) { el.innerHTML='<div style="padding:4px 8px;font-size:12px;color:var(--text3)">Aucun projet</div>'; return; }
+  el.innerHTML=projets.map(p=>`
+    <div class="nav-item ${currentProjectId===p.id?'active':''}" id="navp-${p.id}" onclick="openProject(${p.id})">
+      📁 <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nom}</span>
+      <span class="badge">${p.participants.length}</span>
     </div>`).join('');
 }
 
-function goHome() {
-  state.currentProjectId = null;
-  document.getElementById('topbar-title').textContent = 'Tableau de bord';
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('nav-home').classList.add('active');
-  showScreen('screen-home');
-  renderHome();
+// ══ NEW PROJECT ═══════════════════════════════════════════════════════════════
+function showNewProject() {
+  newParts=[];
+  document.getElementById('inp-nom').value='';
+  document.getElementById('inp-desc').value='';
+  document.getElementById('inp-part').value='';
+  document.getElementById('new-parts-list').innerHTML='';
+  document.getElementById('parts-count').textContent='(0 ajouté)';
+  const btn=document.getElementById('btn-create');
+  btn.textContent='✓ Créer le projet'; btn.disabled=false;
+  document.getElementById('topbar-title').textContent='Nouveau projet';
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  showScreen('s-new');
+  setTimeout(()=>document.getElementById('inp-nom').focus(), 100);
 }
 
-function renderHome() {
-  const el = document.getElementById('home-content');
-  if(!state.projects.length) {
-    el.innerHTML = `
-      <div class="home-empty">
-        <div class="icon">📋</div>
-        <h2>Aucun projet pour l'instant</h2>
-        <p>Créez votre premier projet pour commencer à suivre les présences de vos participants.</p>
-        <button class="btn-submit" style="width:auto;padding:11px 28px" onclick="showNewProject()">+ Créer un projet</button>
-      </div>`;
-    return;
+function addNewPart() {
+  const inp=document.getElementById('inp-part');
+  const nom=inp.value.trim();
+  if(!nom) { inp.focus(); return; }
+  // eviter les doublons
+  if(newParts.find(p=>p.nom.toLowerCase()===nom.toLowerCase())) {
+    toast('Ce participant est déjà dans la liste.'); inp.value=''; inp.focus(); return;
   }
-  el.innerHTML = `
-    <div class="section-label" style="margin-bottom:16px">Projets actifs — ${state.projects.length}</div>
-    <div class="projects-grid">
-      ${state.projects.map(p => `
-        <div class="project-card" onclick="openProject(${p.id})">
-          <div class="project-card-name">${p.nom}</div>
-          <div class="project-card-desc">${p.description || '—'}</div>
-          <div class="project-card-footer">
-            <span class="pill pill-blue">${p.participants.length} participant${p.participants.length>1?'s':''}</span>
-            <span class="pill pill-green">${p.nb_jours} jour${p.nb_jours>1?'s':''}</span>
-          </div>
-        </div>`).join('')}
-    </div>`;
+  newParts.push({ id: Date.now()+'_'+Math.random(), nom });
+  inp.value='';
+  renderNewParts();
+  inp.focus();
 }
 
+function removeNewPart(id) {
+  newParts=newParts.filter(p=>p.id!==id);
+  renderNewParts();
+}
+
+function renderNewParts() {
+  document.getElementById('parts-count').textContent=`(${newParts.length} ajouté${newParts.length>1?'s':''})`;
+  document.getElementById('new-parts-list').innerHTML=newParts.map(p=>`
+    <div class="pi-row">
+      <div class="av" style="${avStyle(p.nom)};width:28px;height:28px;font-size:10px">${getInitials(p.nom)}</div>
+      <div class="pi-name">${p.nom}</div>
+      <button class="btn-rm" type="button" onclick="removeNewPart('${p.id}')">×</button>
+    </div>`).join('');
+}
+
+async function createProject() {
+  const nom=document.getElementById('inp-nom').value.trim();
+  if(!nom) { toast('Veuillez entrer un nom de projet.'); document.getElementById('inp-nom').focus(); return; }
+  if(!newParts.length) { toast('Ajoutez au moins un participant avant de créer.'); return; }
+
+  const btn=document.getElementById('btn-create');
+  btn.textContent='Création en cours…'; btn.disabled=true;
+
+  try {
+    const res = await window.api.createProjet({
+      nom,
+      description: document.getElementById('inp-desc').value.trim(),
+      participants: newParts.map(p=>p.nom)
+    });
+
+    if(!res || !res.success || !res.id) {
+      toast('Erreur lors de la création : '+(res?.error||'réponse invalide'));
+      btn.textContent='✓ Créer le projet'; btn.disabled=false;
+      return;
+    }
+
+    newParts=[];
+    await renderNavProjects();
+    await openProject(res.id);
+    toast('✓ Projet créé avec succès !');
+
+  } catch(e) {
+    console.error('createProject error:', e);
+    toast('Erreur : '+e.message);
+    btn.textContent='✓ Créer le projet'; btn.disabled=false;
+  }
+}
+
+// ══ OPEN PROJECT ══════════════════════════════════════════════════════════════
 async function openProject(id) {
-  state.currentProjectId = id;
-  const p = state.projects.find(x=>x.id==id);
-  document.getElementById('topbar-title').textContent = p.nom;
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navEl = document.getElementById(`navp-${id}`);
-  if(navEl) navEl.classList.add('active');
-
-  document.querySelectorAll('.tab').forEach((t,i) => { t.classList.toggle('active', i===0); });
-  document.querySelectorAll('.tab-content').forEach((t,i) => { t.classList.toggle('active', i===0); });
-  state.currentTab = 'today';
-
-  showScreen('screen-project');
-  await renderTodayTab();
+  currentProjectId=id;
+  const projets=await window.api.getProjets();
+  const p=projets.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('topbar-title').textContent=p.nom;
+  await renderNavProjects();
+  setActiveNav(`navp-${id}`);
+  // reset tabs
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.tc').forEach((t,i)=>t.classList.toggle('active',i===0));
+  showScreen('s-project');
+  await renderToday();
 }
 
-// ── TABS ──────────────────────────────────────────────────────────────────
-async function switchTab(name, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+// ══ TABS ══════════════════════════════════════════════════════════════════════
+async function swTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById(`tab-${name}`).classList.add('active');
-  state.currentTab = name;
-  if(name==='today') await renderTodayTab();
-  if(name==='history') await renderHistoryTab();
-  if(name==='stats') await renderStatsTab();
-  if(name==='settings') renderSettingsTab();
+  document.getElementById(`tc-${name}`).classList.add('active');
+  if(name==='today')    await renderToday();
+  if(name==='history')  await renderHistory();
+  if(name==='stats')    await renderStats();
+  if(name==='settings') await renderSettings();
 }
 
-// ── TODAY ──────────────────────────────────────────────────────────────────
-async function renderTodayTab() {
-  const id = state.currentProjectId;
-  const data = await window.api.getPresencesJour({ projet_id: id, date: today() });
-  const present = data.filter(p=>p.statut==='present').length;
-  const absent = data.filter(p=>p.statut==='absent').length;
-  const pct = data.length ? Math.round(present/data.length*100) : 0;
-
-  const el = document.getElementById('tab-today');
-  el.innerHTML = `
+// ══ TODAY ═════════════════════════════════════════════════════════════════════
+async function renderToday() {
+  const data=await window.api.getPresencesJour({projet_id:currentProjectId, date:today()});
+  const present=data.filter(p=>p.statut==='present').length;
+  const absent =data.filter(p=>p.statut==='absent').length;
+  const pct=data.length?Math.round(present/data.length*100):0;
+  document.getElementById('tc-today').innerHTML=`
     <div class="stats-row">
-      <div class="stat-card blue"><div class="stat-n">${data.length}</div><div class="stat-l">Total</div></div>
-      <div class="stat-card green"><div class="stat-n">${present}</div><div class="stat-l">Présents</div></div>
-      <div class="stat-card red"><div class="stat-n">${absent}</div><div class="stat-l">Absents</div></div>
-      <div class="stat-card amber"><div class="stat-n">${pct}%</div><div class="stat-l">Taux présence</div></div>
+      <div class="sc blue"><div class="sc-n">${data.length}</div><div class="sc-l">Total</div></div>
+      <div class="sc green"><div class="sc-n">${present}</div><div class="sc-l">Présents</div></div>
+      <div class="sc red"><div class="sc-n">${absent}</div><div class="sc-l">Absents</div></div>
+      <div class="sc amber"><div class="sc-n">${pct}%</div><div class="sc-l">Taux présence</div></div>
     </div>
-    <div class="section-label">Marquer les présences — ${fmtDate(today())}</div>
-    <div class="part-list">
-      ${data.map(p => `
-        <div class="part-row ${p.statut||''}" id="row-${p.id}">
-          <div class="avatar" style="${avatarStyle(p.nom)}">${getInitials(p.nom)}</div>
-          <div style="flex:1">
-            <div class="part-name">${p.nom}</div>
-            <div class="part-status ${p.statut||'none'}" id="st-${p.id}">
-              ${p.statut==='present'?'Présent':p.statut==='absent'?'Absent':'Non marqué'}
-            </div>
-          </div>
-          <div class="btn-group">
-            <button class="btn-p ${p.statut==='present'?'active':''}" id="bp-${p.id}" onclick="mark(${p.id},'present')">✓ Présent</button>
-            <button class="btn-a ${p.statut==='absent'?'active':''}" id="ba-${p.id}" onclick="mark(${p.id},'absent')">✗ Absent</button>
-          </div>
-        </div>`).join('')}
+    <div class="sec-lbl">Marquer les présences — ${fmtDate(today())}</div>
+    <div class="part-list">${data.map(p=>`
+      <div class="part-row ${p.statut||''}" id="row-${p.id}">
+        <div class="av" style="${avStyle(p.nom)}">${getInitials(p.nom)}</div>
+        <div style="flex:1">
+          <div class="pname">${p.nom}</div>
+          <div class="pstatus ${p.statut||''}" id="ps-${p.id}">${p.statut==='present'?'Présent':p.statut==='absent'?'Absent':'Non marqué'}</div>
+        </div>
+        <div class="btn-grp">
+          <button class="bp ${p.statut==='present'?'active':''}" id="bp-${p.id}" onclick="mark(${p.id},'present')">✓ Présent</button>
+          <button class="ba ${p.statut==='absent'?'active':''}"  id="ba-${p.id}" onclick="mark(${p.id},'absent')">✗ Absent</button>
+        </div>
+      </div>`).join('')}
     </div>`;
 }
 
 async function mark(participantId, statut) {
-  await window.api.marquerPresence({ participant_id: participantId, projet_id: state.currentProjectId, date: today(), statut });
-  const row = document.getElementById(`row-${participantId}`);
-  const st = document.getElementById(`st-${participantId}`);
-  const bp = document.getElementById(`bp-${participantId}`);
-  const ba = document.getElementById(`ba-${participantId}`);
-  row.className = `part-row ${statut}`;
-  st.className = `part-status ${statut}`;
-  st.textContent = statut==='present' ? 'Présent' : 'Absent';
-  bp.classList.toggle('active', statut==='present');
-  ba.classList.toggle('active', statut==='absent');
-  updateStatCards();
+  await window.api.marquerPresence({participant_id:participantId, projet_id:currentProjectId, date:today(), statut});
+  document.getElementById(`row-${participantId}`).className=`part-row ${statut}`;
+  const ps=document.getElementById(`ps-${participantId}`);
+  ps.className=`pstatus ${statut}`; ps.textContent=statut==='present'?'Présent':'Absent';
+  document.getElementById(`bp-${participantId}`).className=`bp ${statut==='present'?'active':''}`;
+  document.getElementById(`ba-${participantId}`).className=`ba ${statut==='absent'?'active':''}`;
+  // refresh counters
+  const data=await window.api.getPresencesJour({projet_id:currentProjectId, date:today()});
+  const pres=data.filter(p=>p.statut==='present').length;
+  const abs =data.filter(p=>p.statut==='absent').length;
+  const pct=data.length?Math.round(pres/data.length*100):0;
+  document.querySelector('.sc.blue .sc-n').textContent=data.length;
+  document.querySelector('.sc.green .sc-n').textContent=pres;
+  document.querySelector('.sc.red .sc-n').textContent=abs;
+  document.querySelector('.sc.amber .sc-n').textContent=pct+'%';
 }
 
-async function updateStatCards() {
-  const data = await window.api.getPresencesJour({ projet_id: state.currentProjectId, date: today() });
-  const present = data.filter(p=>p.statut==='present').length;
-  const absent = data.filter(p=>p.statut==='absent').length;
-  const pct = data.length ? Math.round(present/data.length*100) : 0;
-  document.querySelector('.stat-card.blue .stat-n').textContent = data.length;
-  document.querySelector('.stat-card.green .stat-n').textContent = present;
-  document.querySelector('.stat-card.red .stat-n').textContent = absent;
-  document.querySelector('.stat-card.amber .stat-n').textContent = pct + '%';
-}
-
-// ── HISTORY ───────────────────────────────────────────────────────────────
-async function renderHistoryTab() {
-  const el = document.getElementById('tab-history');
-  const jours = await window.api.getJoursDisponibles(state.currentProjectId);
-  el.innerHTML = `
-    <div class="date-filter">
-      <input type="date" class="form-input" id="hist-date" value="${today()}" />
-      <button class="btn-secondary" onclick="loadHistorique()">Afficher</button>
-      <button class="btn-secondary" onclick="window.api.exportCSV(${state.currentProjectId}).then(r=>r.success&&toast('Export réussi : '+r.path))">↓ Exporter CSV</button>
-      <button class="btn-secondary" style="background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.3);color:#f87171" onclick="exportPDF()">📄 Exporter PDF</button>
+// ══ HISTORY ═══════════════════════════════════════════════════════════════════
+async function renderHistory() {
+  const jours=await window.api.getJoursDisponibles(currentProjectId);
+  document.getElementById('tc-history').innerHTML=`
+    <div class="df">
+      <input type="date" class="fi" id="hist-date" value="${today()}" style="width:auto" />
+      <button class="btn-sec" onclick="loadHistorique()">Afficher</button>
+      <button class="btn-sec" onclick="doExportCSV()">↓ CSV</button>
+      <button class="btn-sec" style="background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.3);color:#f87171" onclick="doExportPDF()">📄 PDF</button>
     </div>
-    ${jours.length ? `<div class="section-label">Jours enregistrés : ${jours.map(d=>`<span style="color:var(--text2)">${fmtDate(d)}</span>`).join(', ')}</div>` : ''}
-    <div id="hist-content" style="margin-top:14px"></div>`;
+    ${jours.length?`<div class="sec-lbl" style="margin-bottom:12px">Jours enregistrés : ${jours.slice(0,8).map(d=>`<span style="color:var(--text2)">${fmtDate(d)}</span>`).join(', ')}${jours.length>8?'…':''}</div>`:''}
+    <div id="hist-content"></div>`;
   await loadHistorique();
 }
 
 async function loadHistorique() {
-  const date = document.getElementById('hist-date')?.value;
-  if(!date) return;
-  const data = await window.api.getHistoriqueDate({ projet_id: state.currentProjectId, date });
-  const el = document.getElementById('hist-content');
-  if(!data.length) { el.innerHTML='<div class="empty">Aucune donnée pour cette date.</div>'; return; }
-
-  const present = data.filter(p=>p.statut==='present');
-  const absent = data.filter(p=>p.statut==='absent');
-  const none = data.filter(p=>!p.statut);
-
-  const block = (title, list, cls) => list.length ? `
-    <div class="history-block">
-      <div class="history-head">
-        <span class="dot ${cls}"></span>${title} — <strong>${list.length}</strong>
-      </div>
-      ${list.map(p=>`
-        <div class="history-row">
-          <div class="avatar" style="${avatarStyle(p.nom)};width:30px;height:30px;font-size:11px">${getInitials(p.nom)}</div>
-          <div class="dot ${cls}"></div>
-          <div class="h-name">${p.nom}</div>
-          <div class="h-status ${cls}">${cls==='present'?'Présent':cls==='absent'?'Absent':'—'}</div>
-        </div>`).join('')}
-    </div>` : '';
-
-  el.innerHTML = block('Présents', present, 'present') + block('Absents', absent, 'absent') + block('Non marqués', none, 'none')
+  const date=document.getElementById('hist-date')?.value; if(!date) return;
+  const data=await window.api.getHistoriqueDate({projet_id:currentProjectId, date});
+  const el=document.getElementById('hist-content');
+  const present=data.filter(p=>p.statut==='present');
+  const absent =data.filter(p=>p.statut==='absent');
+  const none   =data.filter(p=>!p.statut);
+  const block=(title,list,cls)=>list.length?`
+    <div class="hblock">
+      <div class="hhead"><span class="dot ${cls}"></span>${title} — <strong>${list.length}</strong></div>
+      ${list.map(p=>`<div class="hrow">
+        <div class="av" style="${avStyle(p.nom)};width:28px;height:28px;font-size:10px">${getInitials(p.nom)}</div>
+        <div class="dot ${cls}"></div>
+        <div class="hname">${p.nom}</div>
+        <div class="hst ${cls}">${cls==='present'?'Présent':cls==='absent'?'Absent':'—'}</div>
+      </div>`).join('')}
+    </div>`:''
+  el.innerHTML = block('Présents',present,'present')+block('Absents',absent,'absent')+block('Non marqués',none,'none')
     || '<div class="empty">Aucun marquage pour cette date.</div>';
 }
 
-// ── STATS ─────────────────────────────────────────────────────────────────
-async function renderStatsTab() {
-  const stats = await window.api.getStats(state.currentProjectId);
-  const el = document.getElementById('tab-stats');
-  if(!stats.jours.length) { el.innerHTML='<div class="empty">Aucune donnée disponible.</div>'; return; }
-
-  el.innerHTML = `
-    <div class="stats-row" style="max-width:600px">
-      <div class="stat-card blue"><div class="stat-n">${stats.jours.length}</div><div class="stat-l">Jours</div></div>
-      <div class="stat-card""><div class="stat-n">${stats.participants.length}</div><div class="stat-l">Participants</div></div>
-    </div>
-    <div class="section-label">Taux de présence par participant</div>
-    <div class="stats-table">
-      ${stats.participants.map(p => {
-        const pct = p.total ? Math.round(p.present/p.total*100) : 0;
-        return `
-          <div class="st-row">
-            <div class="avatar" style="${avatarStyle(p.nom)};width:30px;height:30px;font-size:11px;margin-right:4px">${getInitials(p.nom)}</div>
-            <div class="st-name">${p.nom}</div>
-            <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
-            <div class="st-pct">${pct}%</div>
-            <div class="st-nums"><span class="st-p">${p.present}P</span><span class="st-a">${p.absent}A</span></div>
-          </div>`;
-      }).join('')}
-    </div>
-    <div style="margin-top:10px;font-size:11px;color:var(--text3)">Basé sur ${stats.jours.length} jour${stats.jours.length>1?'s':''} enregistré${stats.jours.length>1?'s':''} : ${stats.jours.slice(0,5).map(d=>fmtDate(d)).join(', ')}${stats.jours.length>5?'…':''}</div>`;
+async function doExportCSV() {
+  const res=await window.api.exportCSV(currentProjectId);
+  if(res?.success) toast('✓ CSV exporté !'); 
 }
 
-// ── SETTINGS ──────────────────────────────────────────────────────────────
-function renderSettingsTab() {
-  const p = state.projects.find(x=>x.id==state.currentProjectId);
-  if(!p) return;
-  const el = document.getElementById('tab-settings');
-  el.innerHTML = `
-    <div class="form-card" style="max-width:520px">
+async function doExportPDF() {
+  const date=document.getElementById('hist-date')?.value;
+  if(!date) { toast('Veuillez sélectionner une date.'); return; }
+  const res=await window.api.exportPDF({projet_id:currentProjectId, date});
+  if(res?.success) toast('✓ PDF exporté !');
+}
+
+// ══ STATS ═════════════════════════════════════════════════════════════════════
+async function renderStats() {
+  const stats=await window.api.getStats(currentProjectId);
+  const el=document.getElementById('tc-stats');
+  if(!stats.jours.length){el.innerHTML='<div class="empty">Aucune donnée disponible.</div>';return;}
+  el.innerHTML=`
+    <div class="stats-row" style="max-width:500px">
+      <div class="sc blue"><div class="sc-n">${stats.jours.length}</div><div class="sc-l">Jours</div></div>
+      <div class="sc"><div class="sc-n">${stats.participants.length}</div><div class="sc-l">Participants</div></div>
+    </div>
+    <div class="sec-lbl">Taux de présence par participant</div>
+    <div class="stbl">${stats.participants.map(p=>{
+      const pct=p.total?Math.round(p.present/p.total*100):0;
+      return `<div class="st-row">
+        <div class="av" style="${avStyle(p.nom)};width:28px;height:28px;font-size:10px;margin-right:2px">${getInitials(p.nom)}</div>
+        <div class="st-name">${p.nom}</div>
+        <div class="bw"><div class="bf" style="width:${pct}%"></div></div>
+        <div class="st-pct">${pct}%</div>
+        <div class="st-nums"><span class="stp">${p.present}P</span><span class="sta">${p.absent}A</span></div>
+      </div>`;}).join('')}
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3)">Basé sur ${stats.jours.length} jour${stats.jours.length>1?'s':''} enregistré${stats.jours.length>1?'s':''}</div>`;
+}
+
+// ══ SETTINGS ══════════════════════════════════════════════════════════════════
+async function renderSettings() {
+  const projets=await window.api.getProjets();
+  const p=projets.find(x=>x.id===currentProjectId); if(!p) return;
+  document.getElementById('tc-settings').innerHTML=`
+    <div class="form-card" style="max-width:500px">
       <div class="form-title">Paramètres du projet</div>
-      <div class="form-group">
-        <label class="form-label">Nom du projet</label>
-        <input class="form-input" value="${p.nom}" disabled />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Participants (${p.participants.length})</label>
-        <div class="participants-box">
-          <div id="settings-parts-list">
-            ${p.participants.map(par=>`
-              <div class="part-item-row" id="spr-${par.id}">
-                <div class="avatar" style="${avatarStyle(par.nom)};width:28px;height:28px;font-size:10px">${getInitials(par.nom)}</div>
-                <div class="part-item-name">${par.nom}</div>
-                <button class="btn-remove" onclick="removePart(${par.id},'${par.nom}')">×</button>
-              </div>`).join('')}
-          </div>
+      <div class="fg"><label class="fl">Nom</label><input class="fi" value="${p.nom}" disabled /></div>
+      <div class="fg">
+        <label class="fl">Participants (${p.participants.length})</label>
+        <div class="parts-box">
+          <div id="stt-parts">${p.participants.map(par=>`
+            <div class="pi-row" id="spi-${par.id}">
+              <div class="av" style="${avStyle(par.nom)};width:28px;height:28px;font-size:10px">${getInitials(par.nom)}</div>
+              <div class="pi-name">${par.nom}</div>
+              <button class="btn-rm" onclick="removePart(${par.id},'${par.nom.replace(/'/g,"\\'")}')">×</button>
+            </div>`).join('')}</div>
           <div class="add-row">
-            <input class="form-input" id="inp-add-part" placeholder="Nouveau participant" onkeydown="if(event.key==='Enter')addPartToProject()" />
+            <input class="fi" id="stt-inp" placeholder="Nouveau participant" onkeydown="if(event.key==='Enter')addPartToProject()" />
             <button class="btn-add" onclick="addPartToProject()">+ Ajouter</button>
           </div>
         </div>
       </div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-        <button class="btn-danger" onclick="confirmDeleteProject()">Supprimer ce projet</button>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px">
+        <button class="btn-danger" onclick="deleteProject()">🗑 Supprimer ce projet</button>
       </div>
     </div>`;
 }
@@ -644,113 +565,33 @@ function renderSettingsTab() {
 async function removePart(id, nom) {
   if(!confirm(`Supprimer ${nom} ? Ses présences seront aussi supprimées.`)) return;
   await window.api.removeParticipant(id);
-  document.getElementById(`spr-${id}`)?.remove();
-  await loadProjects(); renderNavProjects();
+  document.getElementById(`spi-${id}`)?.remove();
+  await renderNavProjects();
   toast(`${nom} supprimé`);
 }
 
 async function addPartToProject() {
-  const inp = document.getElementById('inp-add-part');
-  const nom = inp.value.trim();
-  if(!nom) return;
-  const res = await window.api.addParticipant({ projet_id: state.currentProjectId, nom });
-  inp.value = '';
-  const list = document.getElementById('settings-parts-list');
-  const div = document.createElement('div');
-  div.className = 'part-item-row'; div.id = `spr-${res.id}`;
-  div.innerHTML = `
-    <div class="avatar" style="${avatarStyle(nom)};width:28px;height:28px;font-size:10px">${getInitials(nom)}</div>
-    <div class="part-item-name">${nom}</div>
-    <button class="btn-remove" onclick="removePart(${res.id},'${nom}')">×</button>`;
+  const inp=document.getElementById('stt-inp');
+  const nom=inp.value.trim(); if(!nom) return;
+  const res=await window.api.addParticipant({projet_id:currentProjectId, nom});
+  inp.value='';
+  const list=document.getElementById('stt-parts');
+  const div=document.createElement('div');
+  div.className='pi-row'; div.id=`spi-${res.id}`;
+  div.innerHTML=`<div class="av" style="${avStyle(nom)};width:28px;height:28px;font-size:10px">${getInitials(nom)}</div><div class="pi-name">${nom}</div><button class="btn-rm" onclick="removePart(${res.id},'${nom.replace(/'/g,"\\'")}')">×</button>`;
   list.appendChild(div);
-  await loadProjects(); renderNavProjects();
+  await renderNavProjects();
   toast(`${nom} ajouté`);
 }
 
-async function confirmDeleteProject() {
-  const p = state.projects.find(x=>x.id==state.currentProjectId);
-  if(!confirm(`Supprimer le projet "${p.nom}" ? Cette action est irréversible.`)) return;
-  await window.api.deleteProjet(state.currentProjectId);
-  await loadProjects();
-  renderNavProjects();
+async function deleteProject() {
+  const projets=await window.api.getProjets();
+  const p=projets.find(x=>x.id===currentProjectId);
+  if(!confirm(`Supprimer le projet "${p?.nom}" ? Cette action est irréversible.`)) return;
+  await window.api.deleteProjet(currentProjectId);
+  await renderNavProjects();
   goHome();
   toast('Projet supprimé');
-}
-
-// ── NEW PROJECT ────────────────────────────────────────────────────────────
-function showNewProject() {
-  state.newParts = [];
-  document.getElementById('inp-proj-name').value = '';
-  document.getElementById('inp-proj-desc').value = '';
-  document.getElementById('new-proj-parts-list').innerHTML = '';
-  showScreen('screen-new-project');
-  document.getElementById('topbar-title').textContent = 'Nouveau projet';
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-}
-
-function addNewPart() {
-  const inp = document.getElementById('inp-new-part');
-  const nom = inp.value.trim(); if(!nom) return;
-  state.newParts.push({ id: Date.now()+'', nom });
-  inp.value = '';
-  renderNewParts();
-  inp.focus();
-}
-function removeNewPart(id) {
-  state.newParts = state.newParts.filter(p=>p.id!==id);
-  renderNewParts();
-}
-function renderNewParts() {
-  document.getElementById('new-proj-parts-list').innerHTML = state.newParts.map(p=>`
-    <div class="part-item-row">
-      <div class="avatar" style="${avatarStyle(p.nom)};width:28px;height:28px;font-size:10px">${getInitials(p.nom)}</div>
-      <div class="part-item-name">${p.nom}</div>
-      <button class="btn-remove" onclick="removeNewPart('${p.id}')">×</button>
-    </div>`).join('');
-}
-
-async function submitNewProject() {
-  const nom = document.getElementById('inp-proj-name').value.trim();
-  if(!nom) { document.getElementById('inp-proj-name').focus(); return; }
-  if(!state.newParts.length) { toast('Ajoutez au moins un participant.'); return; }
-  const btn = document.querySelector('#screen-new-project .btn-submit');
-  if(btn) { btn.textContent = 'Création en cours…'; btn.disabled = true; }
-  try {
-    const res = await window.api.createProjet({
-      nom,
-      description: document.getElementById('inp-proj-desc').value.trim(),
-      participants: state.newParts.map(p => p.nom)
-    });
-    if (!res || !res.id) {
-      toast('Erreur lors de la création. Réessayez.');
-      if(btn) { btn.textContent = 'Créer le projet'; btn.disabled = false; }
-      return;
-    }
-    state.newParts = [];
-    await loadProjects();
-    renderNavProjects();
-    openProject(res.id);
-    toast('Projet créé !');
-  } catch(e) {
-    console.error('submitNewProject error:', e);
-    toast('Erreur : ' + e.message);
-    if(btn) { btn.textContent = 'Créer le projet'; btn.disabled = false; }
-  }
-}
-
-// ── EXPORT PDF ────────────────────────────────────────────────────────────
-async function exportPDF() {
-  const date = document.getElementById('hist-date')?.value;
-  if (!date) { toast('Veuillez sélectionner une date.'); return; }
-  const res = await window.api.exportPDF({ projet_id: state.currentProjectId, date });
-  if (res && res.success) toast('PDF exporté avec succès !');
-  else if (res && !res.success) toast('Export annulé.');
-}
-
-// ── UTILS ──────────────────────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
 }
 </script>
 </body>
